@@ -35,6 +35,32 @@ let templatePath = null;
 let useDefaultCss = true;
 
 /**
+ * はてな記法のリンク埋め込みを変換
+ * [URL:title] → <a>リンク</a>
+ * [URL:embed] or [URL:embed:cite] → はてなブログカード
+ */
+function convertHatenaEmbed(content) {
+  // [URL:embed] または [URL:embed:cite] → はてなブログカード
+  const embedPattern = /\[(https?:\/\/[^\]]+):embed(?::cite)?\]/g;
+  content = content.replace(embedPattern, (match, url) => {
+    const encodedUrl = encodeURIComponent(url);
+    const domain = new URL(url).hostname;
+    return `<p><iframe src="https://hatenablog-parts.com/embed?url=${encodedUrl}" ` +
+      `title="" class="embed-card embed-webcard" scrolling="no" frameborder="0" ` +
+      `style="display: block; width: 100%; height: 155px; max-width: 500px; margin: 10px 0px;" loading="lazy"></iframe>` +
+      `<cite class="hatena-citation"><a href="${url}" target="_blank" rel="noopener noreferrer">${domain}</a></cite></p>`;
+  });
+
+  // [URL:title] → シンプルなリンク
+  const titlePattern = /\[(https?:\/\/[^\]]+):title\]/g;
+  content = content.replace(titlePattern, (match, url) => {
+    return `<p><a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a></p>`;
+  });
+
+  return content;
+}
+
+/**
  * はてな記法の画像を変換
  * [f:id:username:20251211182309p:plain] → <figure>...</figure>
  * [f:id:username:20251211182309p:plain:w400] → 幅400px指定
@@ -91,6 +117,7 @@ function loadCss() {
 function generateHtml(mdPath) {
   let mdContent = fs.readFileSync(mdPath, 'utf-8');
   // はてな記法を変換
+  mdContent = convertHatenaEmbed(mdContent);
   mdContent = convertHatenaFotolife(mdContent);
   const htmlContent = marked(mdContent);
   const css = loadCss();
