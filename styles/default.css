@@ -18,7 +18,12 @@ body {
   padding: 32px;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin-top: 24px;
   margin-bottom: 16px;
   font-weight: 600;
@@ -99,13 +104,14 @@ blockquote {
   border-left: 0.25em solid #d1d9e0;
 }
 
-ul, ol {
+ul,
+ol {
   margin-top: 0;
   margin-bottom: 16px;
   padding-left: 2em;
 }
 
-li + li {
+li+li {
   margin-top: 0.25em;
 }
 
@@ -116,7 +122,8 @@ table {
   width: 100%;
 }
 
-th, td {
+th,
+td {
   padding: 6px 13px;
   border: 1px solid #d1d9e0;
 }
@@ -157,4 +164,21 @@ pre.mermaid {
 .mermaid svg {
   max-width: 100%;
   height: auto;
+}
+
+/* はてなフォトライフ画像 */
+.figure-image-fotolife {
+  margin: 1.5em 0;
+  text-align: center;
+}
+
+.figure-image-fotolife img.hatena-fotolife {
+  max-width: 100%;
+  height: auto;
+}
+
+.figure-image-fotolife figcaption {
+  margin-top: 0.5em;
+  font-size: 0.875em;
+  color: #656d76;
 }

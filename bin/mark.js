@@ -34,6 +34,49 @@ let customCssPath = null;
 let templatePath = null;
 let useDefaultCss = true;
 
+/**
+ * はてな記法の画像を変換
+ * [f:id:username:20251211182309p:plain] → <figure>...</figure>
+ * [f:id:username:20251211182309p:plain:w400] → 幅400px指定
+ */
+function convertHatenaFotolife(content) {
+  // パターン: [f:id:ユーザー名:日時+形式:表示形式(:幅or高さ)?]
+  // 形式: p=png, j=jpg, g=gif
+  // 例: [f:id:rasukarusan:20251211182309p:plain]
+  // 例: [f:id:rasukarusan:20251210140049j:plain:w200]
+  const pattern = /\[f:id:([a-zA-Z0-9_-]+):(\d{14})([pjg]):([a-z]+)(?::([wh])(\d+))?\]/g;
+
+  // 形式から拡張子へのマッピング
+  const extMap = { p: 'png', j: 'jpg', g: 'gif' };
+
+  return content.replace(pattern, (match, username, datetime, imgType, format, sizeType, sizeValue) => {
+    // 日時から年月日を抽出（最初の8文字）
+    const date = datetime.substring(0, 8);
+    // ユーザー名の最初の文字
+    const firstChar = username.charAt(0);
+    // 拡張子
+    const ext = extMap[imgType] || 'png';
+
+    // 画像URL生成
+    const imageUrl = `https://cdn-ak.f.st-hatena.com/images/fotolife/${firstChar}/${username}/${date}/${datetime}.${ext}`;
+
+    // サイズ指定がある場合はstyle属性を追加
+    let styleAttr = '';
+    if (sizeType && sizeValue) {
+      const cssProp = sizeType === 'w' ? 'width' : 'height';
+      styleAttr = ` style="${cssProp}:${sizeValue}px"`;
+    }
+
+    // はてなブログ風のfigure要素を生成
+    return `<figure class="figure-image figure-image-fotolife" title="">` +
+      `<span itemscope="" itemtype="http://schema.org/Photograph">` +
+      `<img src="${imageUrl}" loading="lazy" title="" class="hatena-fotolife"${styleAttr} itemprop="image">` +
+      `</span>` +
+      `<figcaption></figcaption>` +
+      `</figure>`;
+  });
+}
+
 function loadCss() {
   let css = '';
   if (useDefaultCss && fs.existsSync(defaultCssPath)) {
@@ -46,7 +89,9 @@ function loadCss() {
 }
 
 function generateHtml(mdPath) {
-  const mdContent = fs.readFileSync(mdPath, 'utf-8');
+  let mdContent = fs.readFileSync(mdPath, 'utf-8');
+  // はてな記法を変換
+  mdContent = convertHatenaFotolife(mdContent);
   const htmlContent = marked(mdContent);
   const css = loadCss();
   const fileName = path.basename(mdPath, path.extname(mdPath));
