@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}} - Markdown Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link type="text/css" rel="stylesheet" href="https://blog.hatena.ne.jp/-/theme/6653586347155924442.css">
+  <link type="text/css" rel="stylesheet" href="https://rasukarusan.github.io/hatena-blog/style.css">
+  <style>
+{{css}}
+
+/* ========== Hatena Blog Layout ========== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #fff;
+  font-family: "Open Sans", "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+}
+
+/* Main Container */
+#container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+#wrapper {
+  display: flex;
+  gap: 40px;
+}
+
+/* Main Content */
+#main {
+  width: 760px;
+  min-width: 0;
+}
+
+/* Sidebar */
+#box2 {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+/* Entry Content Base Styles */
+.entry-content {
+  font-size: 16px;
+  line-height: 2;
+}
+
+/* Code Block Styles */
+.entry-content pre {
+  background-color: #1d1f21;
+  color: #c5c8c6;
+  border: none;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  max-height: 800px;
+  white-space: pre !important;
+  overflow: auto;
+  padding: 16px;
+}
+
+.entry-content code {
+  font-family: Consolas, Monaco, "Andale Mono", monospace;
+  max-height: 800px;
+  white-space: pre !important;
+}
+
+.entry-content pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* Blockquote Styles */
+.entry-content blockquote {
+  position: relative;
+  padding: 25px 55px;
+  border: 0px;
+  font-style: oblique;
+  color: #2b2b2b;
+  background: #f7f6f5;
+}
+
+.entry-content blockquote:before {
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  left: -10px;
+  content: """;
+  font-family: serif;
+  color: #dcdcdc;
+  font-size: 100px;
+  line-height: 1;
+}
+
+.entry-content blockquote:after {
+  display: inline-block;
+  position: absolute;
+  bottom: -50px;
+  right: 20px;
+  content: """;
+  font-family: serif;
+  color: #dcdcdc;
+  font-size: 100px;
+  line-height: 1;
+}
+
+.entry-content blockquote cite {
+  position: relative;
+  padding: 10px;
+  z-index: 3;
+  display: block;
+  text-align: right;
+  color: #888888;
+  font-size: 0.9em;
+}
+
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header id="blog-title" data-brand="hatenablog">
+    <div id="blog-title-inner">
+      <div id="blog-title-content">
+        <h1 id="title"><a href="#">Markdown Preview</a></h1>
+        <h2 id="blog-description">markview.nvim - Hatena Style</h2>
+      </div>
+    </div>
+  </header>
+  <div id="global-menu" class="">
+    <div id="mobile-head">
+      <div id="nav-toggle">
+        <div>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+    <ul class="global-menu-list">
+      <li><a href="#">制作物</a></li>
+      <li><a href="#">一押し記事</a></li>
+      <li><a href="#">GitHub</a></li>
+      <li><a href="#">今まで読んだ本</a></li>
+    </ul>
+  </div>
+
+  <!-- Main Container -->
+  <div id="container">
+    <div id="wrapper">
+      <!-- Main Content -->
+      <main id="main">
+        <article class="entry">
+          <header class="entry-header">
+            <h1 class="entry-title">{{title}}</h1>
+            <p class="entry-date">{{date}}</p>
+          </header>
+          <div class="entry-content">
+            {{content}}
+          </div>
+        </article>
+      </main>
+
+      <!-- Sidebar -->
+      <aside id="box2">
+        <div class="hatena-module hatena-module-profile">
+          <div class="hatena-module-title">Profile</div>
+          <div class="profile-icon">P</div>
+          <div class="profile-name">Preview User</div>
+          <p class="profile-description">markview.nvim でプレビュー中</p>
+        </div>
+
+        <div class="hatena-module hatena-module-category">
+          <div class="hatena-module-title">Categories</div>
+          <ul>
+            <li><a href="#">Markdown</a></li>
+            <li><a href="#">Preview</a></li>
+            <li><a href="#">Neovim</a></li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer id="footer">
+    <div id="footer-inner">
+      <p>Powered by markview.nvim - Hatena Blog Style Preview</p>
+    </div>
+  </footer>
+
+  <script>
+    const ws = new WebSocket('ws://' + location.host);
+    ws.onmessage = (e) => {
+      if (e.data === 'reload') {
+        location.reload();
+      }
+    };
+    ws.onclose = () => {
+      console.log('サーバーが停止しました');
+    };
+  </script>
+</body>
+
+</html>

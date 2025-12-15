@@ -1,0 +1,20 @@
+/* Hatena Blog Style - カスタマイズ用 */
+/* テンプレート (templates/hatena.html) に基本スタイルが含まれています */
+/* このファイルでは追加のカスタマイズを行えます */
+
+/* 例: リンクの色を変更 */
+/*
+.entry-content a {
+  color: #ff6600;
+}
+*/
+
+/* 例: ヘッダーの背景色を変更 */
+/*
+#blog-title {
+  background-color: #333;
+}
+#title a {
+  color: #fff;
+}
+*/
