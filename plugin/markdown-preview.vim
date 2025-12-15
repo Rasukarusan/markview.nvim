@@ -53,6 +53,21 @@ function! s:ResolveStylePaths(style) abort
   return {'css': l:css_path, 'template': l:template_path}
 endfunction
 
+function! s:KillExistingProcess() abort
+  " 既存のジョブを停止
+  if s:preview_job > 0
+    call jobstop(s:preview_job)
+    let s:preview_job = 0
+  endif
+
+  " ポートを使用しているプロセスを強制終了
+  let l:port = g:markdown_preview_port
+  silent! call system('lsof -ti :' . l:port . ' | xargs kill -9 2>/dev/null')
+
+  " 少し待機してポートが解放されるのを待つ
+  sleep 100m
+endfunction
+
 function! s:StartMarkdownPreview(...) abort
   let l:file = expand('%:p')
 
@@ -61,11 +76,8 @@ function! s:StartMarkdownPreview(...) abort
     return
   endif
 
-  " 既に実行中なら自動で停止
-  if s:preview_job > 0
-    call jobstop(s:preview_job)
-    let s:preview_job = 0
-  endif
+  " 既存のプロセスを確実に停止
+  call s:KillExistingProcess()
 
   let l:cmd = [g:markdown_preview_mark_cmd, l:file, '-p', string(g:markdown_preview_port)]
 
@@ -107,13 +119,8 @@ function! s:StartMarkdownPreview(...) abort
 endfunction
 
 function! s:StopMarkdownPreview() abort
-  if s:preview_job > 0
-    call jobstop(s:preview_job)
-    let s:preview_job = 0
-    echo 'プレビューを停止しました'
-  else
-    echohl WarningMsg | echo '実行中のプレビューはありません' | echohl None
-  endif
+  call s:KillExistingProcess()
+  echo 'プレビューを停止しました'
 endfunction
 
 function! s:OnOutput(job_id, data, event) abort
