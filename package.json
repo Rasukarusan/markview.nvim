@@ -1,0 +1,24 @@
+{
+  "name": "mark-preview",
+  "version": "1.0.0",
+  "description": "Markdownファイルをブラウザでプレビューするツール",
+  "type": "module",
+  "bin": {
+    "mark": "./bin/mark.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "markdown",
+    "preview",
+    "cli"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "marked": "^15.0.0",
+    "open": "^10.1.0",
+    "commander": "^12.1.0",
+    "ws": "^8.18.0"
+  }
+}
