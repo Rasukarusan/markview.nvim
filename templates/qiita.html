@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}} - Qiita</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+{{css}}
+
+:root {
+  --color-qiita-green: #55c500;
+  --color-qiita-green-hover: #4db300;
+  --color-background: #f6f6f6;
+  --color-surface: #ffffff;
+  --color-high-emphasis: #333333;
+  --color-medium-emphasis: #777777;
+  --color-low-emphasis: #999999;
+  --color-divider: #e5e5e5;
+  --color-link: #55c500;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-background);
+  font-family: "Noto Sans JP", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  color: var(--color-high-emphasis);
+  line-height: 1.8;
+}
+
+/* ========== Header ========== */
+.global-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-divider);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.header-inner {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-qiita-green);
+  text-decoration: none;
+}
+
+.header-nav {
+  display: flex;
+  gap: 16px;
+}
+
+.header-nav a {
+  color: var(--color-medium-emphasis);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 0;
+}
+
+.header-nav a:hover {
+  color: var(--color-high-emphasis);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-background);
+  border-radius: 4px;
+  padding: 6px 12px;
+  width: 200px;
+}
+
+.search-box input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  width: 100%;
+}
+
+.btn-login {
+  color: var(--color-qiita-green);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 6px 12px;
+}
+
+.btn-signup {
+  background-color: var(--color-qiita-green);
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 6px 16px;
+  border-radius: 4px;
+}
+
+.btn-signup:hover {
+  background-color: var(--color-qiita-green-hover);
+}
+
+/* ========== Main Layout ========== */
+.main-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 80px 16px 40px;
+  display: flex;
+  gap: 24px;
+}
+
+/* ========== Left Sidebar ========== */
+.left-sidebar {
+  width: 56px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 80px;
+  height: fit-content;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.action-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-medium-emphasis);
+  font-size: 18px;
+  text-decoration: none;
+}
+
+.action-btn:hover {
+  background-color: var(--color-background);
+}
+
+.action-btn.liked {
+  color: var(--color-qiita-green);
+  border-color: var(--color-qiita-green);
+}
+
+.like-count {
+  font-size: 12px;
+  color: var(--color-medium-emphasis);
+  text-align: center;
+  margin-top: -8px;
+}
+
+/* ========== Article ========== */
+.article-container {
+  flex: 1;
+  min-width: 0;
+  max-width: 820px;
+}
+
+.article {
+  background-color: var(--color-surface);
+  border-radius: 8px;
+  padding: 32px 40px;
+}
+
+.article-header {
+  margin-bottom: 24px;
+}
+
+.article-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tag {
+  background-color: var(--color-background);
+  color: var(--color-medium-emphasis);
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.tag:hover {
+  background-color: var(--color-divider);
+}
+
+.article-title {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 0 0 16px;
+  color: var(--color-high-emphasis);
+}
+
+.article-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--color-medium-emphasis);
+}
+
+.author-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--color-qiita-green);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.author-name {
+  color: var(--color-high-emphasis);
+  font-weight: 500;
+}
+
+.article-date {
+  color: var(--color-low-emphasis);
+}
+
+/* ========== Article Content ========== */
+.article-content {
+  font-size: 16px;
+  line-height: 1.9;
+  color: var(--color-high-emphasis);
+}
+
+.article-content h1 {
+  font-size: 1.8em;
+  font-weight: 700;
+  margin: 2em 0 0.8em;
+  padding-bottom: 0.3em;
+  border-bottom: 2px solid var(--color-qiita-green);
+}
+
+.article-content h2 {
+  font-size: 1.5em;
+  font-weight: 700;
+  margin: 1.8em 0 0.6em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.article-content h3 {
+  font-size: 1.25em;
+  font-weight: 700;
+  margin: 1.5em 0 0.5em;
+}
+
+.article-content h4 {
+  font-size: 1.1em;
+  font-weight: 700;
+  margin: 1.3em 0 0.5em;
+}
+
+.article-content p {
+  margin: 0 0 1.5em;
+}
+
+.article-content a {
+  color: var(--color-link);
+  text-decoration: none;
+}
+
+.article-content a:hover {
+  text-decoration: underline;
+}
+
+.article-content pre {
+  background-color: #364549;
+  color: #e3e3e3;
+  padding: 16px;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 1.5em 0;
+}
+
+.article-content code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.9em;
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+}
+
+.article-content pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+.article-content blockquote {
+  margin: 1.5em 0;
+  padding: 0.5em 1em;
+  border-left: 4px solid var(--color-qiita-green);
+  background-color: var(--color-background);
+  color: var(--color-medium-emphasis);
+}
+
+.article-content blockquote p {
+  margin: 0;
+}
+
+.article-content ul,
+.article-content ol {
+  margin: 1em 0;
+  padding-left: 1.5em;
+}
+
+.article-content li {
+  margin: 0.5em 0;
+}
+
+.article-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.article-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+}
+
+.article-content th,
+.article-content td {
+  border: 1px solid var(--color-divider);
+  padding: 10px 15px;
+  text-align: left;
+}
+
+.article-content th {
+  background-color: var(--color-background);
+  font-weight: 700;
+}
+
+.article-content hr {
+  border: none;
+  border-top: 1px solid var(--color-divider);
+  margin: 2em 0;
+}
+
+/* ========== Right Sidebar ========== */
+.right-sidebar {
+  width: 300px;
+  flex-shrink: 0;
+}
+
+.sidebar-card {
+  background-color: var(--color-surface);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.sidebar-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-high-emphasis);
+  margin: 0 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.author-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.author-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--color-qiita-green);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.author-card-info {
+  flex: 1;
+}
+
+.author-card-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-high-emphasis);
+  margin-bottom: 4px;
+}
+
+.author-card-id {
+  font-size: 12px;
+  color: var(--color-medium-emphasis);
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toc-list li {
+  margin-bottom: 8px;
+}
+
+.toc-list a {
+  font-size: 13px;
+  color: var(--color-medium-emphasis);
+  text-decoration: none;
+  display: block;
+  padding: 4px 0;
+}
+
+.toc-list a:hover {
+  color: var(--color-qiita-green);
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 1100px) {
+  .right-sidebar {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .left-sidebar {
+    display: none;
+  }
+
+  .header-nav {
+    display: none;
+  }
+
+  .search-box {
+    display: none;
+  }
+
+  .article {
+    padding: 20px;
+  }
+
+  .article-title {
+    font-size: 22px;
+  }
+}
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="global-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <a href="#" class="logo">Qiita</a>
+        <nav class="header-nav">
+          <a href="#">Trend</a>
+          <a href="#">Question</a>
+          <a href="#">Official Event</a>
+          <a href="#">Official Column</a>
+          <a href="#">Organization</a>
+        </nav>
+      </div>
+      <div class="header-right">
+        <div class="search-box">
+          <input type="text" placeholder="キーワードで検索">
+        </div>
+        <a href="#" class="btn-login">ログイン</a>
+        <a href="#" class="btn-signup">新規登録</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="main-container">
+    <!-- Left Sidebar -->
+    <aside class="left-sidebar">
+      <div class="action-buttons">
+        <button class="action-btn liked" title="いいね">♥</button>
+        <span class="like-count">32</span>
+        <a href="#" class="action-btn" title="ストック">☆</a>
+      </div>
+    </aside>
+
+    <!-- Article -->
+    <main class="article-container">
+      <article class="article">
+        <header class="article-header">
+          <div class="article-tags">
+            <a href="#" class="tag">Markdown</a>
+            <a href="#" class="tag">Neovim</a>
+            <a href="#" class="tag">Preview</a>
+          </div>
+          <h1 class="article-title">{{title}}</h1>
+          <div class="article-meta">
+            <div class="author-icon">P</div>
+            <span class="author-name">@preview_user</span>
+            <span class="article-date">投稿日 {{date}}</span>
+          </div>
+        </header>
+        <div class="article-content">
+{{content}}
+        </div>
+      </article>
+    </main>
+
+    <!-- Right Sidebar -->
+    <aside class="right-sidebar">
+      <div class="sidebar-card">
+        <h3 class="sidebar-title">著者</h3>
+        <div class="author-card">
+          <div class="author-card-icon">P</div>
+          <div class="author-card-info">
+            <div class="author-card-name">Preview User</div>
+            <div class="author-card-id">@preview_user</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <h3 class="sidebar-title">目次</h3>
+        <ul class="toc-list">
+          <li><a href="#">見出し1</a></li>
+          <li><a href="#">見出し2</a></li>
+          <li><a href="#">見出し3</a></li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    const ws = new WebSocket('ws://' + location.host);
+    ws.onmessage = (e) => {
+      if (e.data === 'reload') {
+        location.reload();
+      }
+    };
+    ws.onclose = () => {
+      console.log('サーバーが停止しました');
+    };
+  </script>
+</body>
+</html>

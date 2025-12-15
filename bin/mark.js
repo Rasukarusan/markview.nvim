@@ -13,9 +13,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const defaultCssPath = path.join(__dirname, '..', 'styles', 'default.css');
+const templatesDir = path.join(__dirname, '..', 'templates');
 
 let currentMdPath = null;
 let customCssPath = null;
+let templatePath = null;
 let useDefaultCss = true;
 
 function loadCss() {
@@ -34,7 +36,20 @@ function generateHtml(mdPath) {
   const htmlContent = marked(mdContent);
   const css = loadCss();
   const fileName = path.basename(mdPath, path.extname(mdPath));
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
 
+  // テンプレートが指定されている場合はそれを使用
+  if (templatePath && fs.existsSync(templatePath)) {
+    let template = fs.readFileSync(templatePath, 'utf-8');
+    return template
+      .replace(/\{\{title\}\}/g, fileName)
+      .replace(/\{\{content\}\}/g, htmlContent)
+      .replace(/\{\{css\}\}/g, css)
+      .replace(/\{\{date\}\}/g, dateStr);
+  }
+
+  // デフォルトのシンプルなテンプレート
   return `<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -72,6 +87,7 @@ program
 program
   .argument('<file>', 'プレビューするMarkdownファイル')
   .option('-c, --css <path>', 'カスタムCSSファイルのパス')
+  .option('-t, --template <path>', 'HTMLテンプレートファイルのパス')
   .option('--no-default-css', 'デフォルトCSSを適用しない')
   .option('-p, --port <number>', 'ポート番号', '3333')
   .option('--no-open', 'ブラウザを自動で開かない')
@@ -79,6 +95,7 @@ program
     try {
       currentMdPath = path.resolve(file);
       customCssPath = options.css ? path.resolve(options.css) : null;
+      templatePath = options.template ? path.resolve(options.template) : null;
       useDefaultCss = options.defaultCss;
 
       if (!fs.existsSync(currentMdPath)) {
@@ -88,6 +105,11 @@ program
 
       if (customCssPath && !fs.existsSync(customCssPath)) {
         console.error(`エラー: CSSファイルが見つかりません: ${customCssPath}`);
+        process.exit(1);
+      }
+
+      if (templatePath && !fs.existsSync(templatePath)) {
+        console.error(`エラー: テンプレートファイルが見つかりません: ${templatePath}`);
         process.exit(1);
       }
 
