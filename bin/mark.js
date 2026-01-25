@@ -9,6 +9,20 @@ import http from 'http';
 import { WebSocketServer } from 'ws';
 import { fileURLToPath } from 'url';
 
+// mermaid用のカスタムレンダラー
+const renderer = new marked.Renderer();
+const originalCodeRenderer = renderer.code.bind(renderer);
+renderer.code = function(code) {
+  // codeオブジェクトから言語とテキストを取得
+  const lang = code.lang || '';
+  const text = code.text || '';
+  if (lang === 'mermaid') {
+    return `<pre class="mermaid">${text}</pre>`;
+  }
+  return originalCodeRenderer(code);
+};
+marked.setOptions({ renderer });
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -59,12 +73,14 @@ function generateHtml(mdPath) {
   <style>
 ${css}
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
 </head>
 <body>
   <article class="markdown-body">
 ${htmlContent}
   </article>
   <script>
+    mermaid.initialize({ startOnLoad: true });
     const ws = new WebSocket('ws://' + location.host);
     ws.onmessage = (e) => {
       if (e.data === 'reload') {
