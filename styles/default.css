@@ -146,3 +146,15 @@ hr {
 input[type="checkbox"] {
   margin-right: 0.5em;
 }
+
+/* Mermaid diagrams */
+pre.mermaid {
+  background-color: transparent;
+  padding: 16px 0;
+  text-align: center;
+}
+
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
