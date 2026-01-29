@@ -25,6 +25,9 @@ endif
 let s:plugin_root = expand('<sfile>:p:h:h')
 
 let s:preview_job = 0
+let s:scroll_sync_enabled = 0
+let s:last_scroll_time = 0
+let s:scroll_throttle_ms = 100
 
 " スタイル名からCSS・テンプレートパスを解決する関数
 " 戻り値: {'css': path, 'template': path} または {} (エラー時)
@@ -115,12 +118,57 @@ function! s:StartMarkdownPreview(...) abort
   if s:preview_job <= 0
     echohl ErrorMsg | echo 'プレビューの開始に失敗しました' | echohl None
     let s:preview_job = 0
+  else
+    " スクロール同期を有効化
+    call s:EnableScrollSync()
   endif
 endfunction
 
 function! s:StopMarkdownPreview() abort
   call s:KillExistingProcess()
+  call s:DisableScrollSync()
   echo 'プレビューを停止しました'
+endfunction
+
+" スクロール同期を有効化
+function! s:EnableScrollSync() abort
+  let s:scroll_sync_enabled = 1
+  augroup MarkdownPreviewScrollSync
+    autocmd!
+    autocmd CursorMoved,CursorMovedI *.md call s:SendScrollPosition()
+  augroup END
+endfunction
+
+" スクロール同期を無効化
+function! s:DisableScrollSync() abort
+  let s:scroll_sync_enabled = 0
+  augroup MarkdownPreviewScrollSync
+    autocmd!
+  augroup END
+endfunction
+
+" スクロール位置をサーバーに送信（スロットリング付き）
+function! s:SendScrollPosition() abort
+  if !s:scroll_sync_enabled || s:preview_job <= 0
+    return
+  endif
+
+  " スロットリング: 前回の送信からの経過時間をチェック
+  let l:current_time = reltime()
+  let l:elapsed_ms = float2nr(reltimefloat(reltime(s:last_scroll_time)) * 1000)
+  if type(s:last_scroll_time) == v:t_list && l:elapsed_ms < s:scroll_throttle_ms
+    return
+  endif
+  let s:last_scroll_time = l:current_time
+
+  let l:line = line('.')
+  let l:total = line('$')
+  let l:port = g:markdown_preview_port
+
+  " curlでスクロール位置を送信（非同期）
+  let l:json = '{"line":' . l:line . ',"total":' . l:total . '}'
+  let l:cmd = 'curl -s -X POST -H "Content-Type: application/json" -d ''' . l:json . ''' http://localhost:' . l:port . '/scroll > /dev/null 2>&1 &'
+  call system(l:cmd)
 endfunction
 
 function! s:OnOutput(job_id, data, event) abort
