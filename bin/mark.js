@@ -157,6 +157,21 @@ ${htmlContent}
     ws.onmessage = (e) => {
       if (e.data === 'reload') {
         location.reload();
+        return;
+      }
+      // スクロール同期メッセージを処理
+      try {
+        const data = JSON.parse(e.data);
+        if (data.type === 'scroll') {
+          const { line, total } = data;
+          // 行番号に基づいてスクロール位置を計算（比率ベース）
+          const scrollRatio = (line - 1) / Math.max(total - 1, 1);
+          const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+          const targetScroll = Math.round(maxScroll * scrollRatio);
+          window.scrollTo({ top: targetScroll, behavior: 'smooth' });
+        }
+      } catch (err) {
+        // JSON以外のメッセージは無視
       }
     };
     ws.onclose = () => {
@@ -203,7 +218,40 @@ program
 
       const port = parseInt(options.port, 10);
 
+      // 現在のMarkdownファイルの総行数を取得
+      let totalLines = 0;
+      const updateTotalLines = () => {
+        const content = fs.readFileSync(currentMdPath, 'utf-8');
+        totalLines = content.split('\n').length;
+      };
+      updateTotalLines();
+
+      // WebSocketクライアントへのスクロール通知用関数（後で定義）
+      let notifyScroll = null;
+
       const server = http.createServer((req, res) => {
+        // スクロール同期API
+        if (req.method === 'POST' && req.url === '/scroll') {
+          let body = '';
+          req.on('data', chunk => body += chunk);
+          req.on('end', () => {
+            try {
+              const data = JSON.parse(body);
+              const { line, total } = data;
+              if (notifyScroll) {
+                notifyScroll(line, total || totalLines);
+              }
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ success: true }));
+            } catch (e) {
+              res.writeHead(400, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'Invalid JSON' }));
+            }
+          });
+          return;
+        }
+
+        // 通常のHTMLプレビュー
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(generateHtml(currentMdPath));
       });
@@ -224,10 +272,21 @@ program
         });
       };
 
+      // スクロール位置をブラウザに通知
+      notifyScroll = (line, total) => {
+        const scrollData = JSON.stringify({ type: 'scroll', line, total });
+        clients.forEach((ws) => {
+          if (ws.readyState === 1) {
+            ws.send(scrollData);
+          }
+        });
+      };
+
       // fs.watchFileを使用（ポーリング方式、macOSで安定）
       fs.watchFile(currentMdPath, { interval: 300 }, (curr, prev) => {
         if (curr.mtime !== prev.mtime) {
           console.log(`ファイル更新を検知: ${path.basename(currentMdPath)}`);
+          updateTotalLines();
           notifyReload();
         }
       });
