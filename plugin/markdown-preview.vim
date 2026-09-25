@@ -1,5 +1,5 @@
 " Markdown Preview Plugin
-" プレビューサーバーを起動してブラウザでMarkdownをライブプレビュー
+" プレビューサーバーを起動してブラウザでMarkdown/HTMLをライブプレビュー
 
 if exists('g:loaded_markdown_preview')
   finish
@@ -74,8 +74,8 @@ endfunction
 function! s:StartMarkdownPreview(...) abort
   let l:file = expand('%:p')
 
-  if l:file !~# '\.md$'
-    echohl WarningMsg | echo 'Markdownファイルではありません' | echohl None
+  if l:file !~? '\.\(md\|html\?\)$'
+    echohl WarningMsg | echo 'Markdown/HTMLファイルではありません' | echohl None
     return
   endif
 
@@ -135,7 +135,7 @@ function! s:EnableScrollSync() abort
   let s:scroll_sync_enabled = 1
   augroup MarkdownPreviewScrollSync
     autocmd!
-    autocmd CursorMoved,CursorMovedI *.md call s:SendScrollPosition()
+    autocmd CursorMoved,CursorMovedI *.md,*.html,*.htm call s:SendScrollPosition()
   augroup END
 endfunction
 
