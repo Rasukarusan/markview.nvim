@@ -103,6 +103,37 @@ function convertHatenaFotolife(content) {
   });
 }
 
+// ライブリロードとスクロール同期を行うクライアントスクリプト
+// プレビュー対象のHTMLが持つ変数と衝突しないよう即時関数で包む
+const LIVE_CLIENT_SCRIPT = `<script>
+  (() => {
+    const ws = new WebSocket('ws://' + location.host);
+    ws.onmessage = (e) => {
+      if (e.data === 'reload') {
+        location.reload();
+        return;
+      }
+      // スクロール同期メッセージを処理
+      try {
+        const data = JSON.parse(e.data);
+        if (data.type === 'scroll') {
+          const { line, total } = data;
+          // 行番号に基づいてスクロール位置を計算（比率ベース）
+          const scrollRatio = (line - 1) / Math.max(total - 1, 1);
+          const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+          const targetScroll = Math.round(maxScroll * scrollRatio);
+          window.scrollTo({ top: targetScroll, behavior: 'smooth' });
+        }
+      } catch (err) {
+        // JSON以外のメッセージは無視
+      }
+    };
+    ws.onclose = () => {
+      console.log('サーバーが停止しました');
+    };
+  })();
+</script>`;
+
 function loadCss() {
   let css = '';
   if (useDefaultCss && fs.existsSync(defaultCssPath)) {
@@ -112,6 +143,65 @@ function loadCss() {
     css += '\n' + fs.readFileSync(customCssPath, 'utf-8');
   }
   return css;
+}
+
+function isHtmlFile(filePath) {
+  return /\.html?$/i.test(filePath);
+}
+
+/**
+ * HTMLファイルは加工せず、ライブリロード用スクリプトだけを差し込んで返す
+ */
+function generateHtmlFilePreview(htmlPath) {
+  const html = fs.readFileSync(htmlPath, 'utf-8');
+  const closingBody = html.toLowerCase().lastIndexOf('</body>');
+  if (closingBody === -1) {
+    return html + LIVE_CLIENT_SCRIPT;
+  }
+  return html.slice(0, closingBody) + LIVE_CLIENT_SCRIPT + html.slice(closingBody);
+}
+
+function generatePreview(filePath) {
+  return isHtmlFile(filePath) ? generateHtmlFilePreview(filePath) : generateHtml(filePath);
+}
+
+const MIME_TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.htm': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.mjs': 'text/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.mp4': 'video/mp4',
+  '.pdf': 'application/pdf',
+};
+
+/**
+ * プレビュー対象ファイルのディレクトリを起点に、相対パスで参照されたファイルを返す
+ * 戻り値: 配信した場合true
+ */
+function serveStaticFile(req, res, baseDir) {
+  const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+  const filePath = path.resolve(baseDir, '.' + pathname);
+  if (!filePath.startsWith(baseDir + path.sep)) {
+    return false;
+  }
+  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    return false;
+  }
+  const contentType = MIME_TYPES[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
+  res.writeHead(200, { 'Content-Type': contentType });
+  fs.createReadStream(filePath).pipe(res);
+  return true;
 }
 
 function generateHtml(mdPath) {
@@ -153,42 +243,19 @@ ${htmlContent}
   </article>
   <script>
     mermaid.initialize({ startOnLoad: true });
-    const ws = new WebSocket('ws://' + location.host);
-    ws.onmessage = (e) => {
-      if (e.data === 'reload') {
-        location.reload();
-        return;
-      }
-      // スクロール同期メッセージを処理
-      try {
-        const data = JSON.parse(e.data);
-        if (data.type === 'scroll') {
-          const { line, total } = data;
-          // 行番号に基づいてスクロール位置を計算（比率ベース）
-          const scrollRatio = (line - 1) / Math.max(total - 1, 1);
-          const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-          const targetScroll = Math.round(maxScroll * scrollRatio);
-          window.scrollTo({ top: targetScroll, behavior: 'smooth' });
-        }
-      } catch (err) {
-        // JSON以外のメッセージは無視
-      }
-    };
-    ws.onclose = () => {
-      console.log('サーバーが停止しました');
-    };
   </script>
+  ${LIVE_CLIENT_SCRIPT}
 </body>
 </html>`;
 }
 
 program
   .name('mark')
-  .description('MarkdownファイルをブラウザでライブプレビューするCLI')
+  .description('Markdown/HTMLファイルをブラウザでライブプレビューするCLI')
   .version('1.0.0');
 
 program
-  .argument('<file>', 'プレビューするMarkdownファイル')
+  .argument('<file>', 'プレビューするMarkdown/HTMLファイル')
   .option('-c, --css <path>', 'カスタムCSSファイルのパス')
   .option('-t, --template <path>', 'HTMLテンプレートファイルのパス')
   .option('--no-default-css', 'デフォルトCSSを適用しない')
@@ -251,9 +318,13 @@ program
           return;
         }
 
-        // 通常のHTMLプレビュー
+        // プレビュー対象から相対パスで参照された画像・CSS等
+        if (req.method === 'GET' && req.url !== '/' && serveStaticFile(req, res, path.dirname(currentMdPath))) {
+          return;
+        }
+
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end(generateHtml(currentMdPath));
+        res.end(generatePreview(currentMdPath));
       });
 
       const wss = new WebSocketServer({ server });
