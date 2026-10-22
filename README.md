@@ -93,7 +93,7 @@ mark README.md -c ./my-style.css -p 8080
 ## Configuration
 
 ```vim
-" markコマンドのパス
+" markコマンドのパス（デフォルト: プラグイン同梱の bin/mark.js）
 let g:markdown_preview_mark_cmd = 'mark'
 
 " ポート番号

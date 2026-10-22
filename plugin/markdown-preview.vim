@@ -6,9 +6,13 @@ if exists('g:loaded_markdown_preview')
 endif
 let g:loaded_markdown_preview = 1
 
+" プラグインのディレクトリパスを取得
+let s:plugin_root = expand('<sfile>:p:h:h')
+
 " markコマンドのパス（カスタマイズ可能）
+" PATH上のグローバルコマンドはNodeのバージョンを切り替えると消えるため、プラグイン同梱のものを使う
 if !exists('g:markdown_preview_mark_cmd')
-  let g:markdown_preview_mark_cmd = 'mark'
+  let g:markdown_preview_mark_cmd = s:plugin_root . '/bin/mark.js'
 endif
 
 " ポート番号（カスタマイズ可能）
@@ -20,9 +24,6 @@ endif
 if !exists('g:markdown_preview_css')
   let g:markdown_preview_css = ''
 endif
-
-" プラグインのディレクトリパスを取得
-let s:plugin_root = expand('<sfile>:p:h:h')
 
 let s:preview_job = 0
 let s:scroll_sync_enabled = 0
